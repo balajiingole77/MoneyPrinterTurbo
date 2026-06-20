@@ -1,0 +1,17 @@
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[build.args]
+# Railway runs outside China — use official Debian/PyPI mirrors so the
+# image builds fast and reliably (MPT defaults to China mirrors).
+DOCKER_BUILD_MIRROR = "default"
+PIP_USE_OFFICIAL = "1"
+
+[deploy]
+# Generate config.toml from Railway env vars, then launch the WebUI.
+startCommand = "python railway_entrypoint.py && streamlit run ./webui/Main.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --browser.gatherUsageStats=false"
+healthcheckPath = "/"
+healthcheckTimeout = 120
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
