@@ -44,6 +44,11 @@ def main() -> None:
     app["deepseek_base_url"] = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     app["deepseek_model_name"] = os.getenv("DEEPSEEK_MODEL_NAME", "deepseek-chat")
 
+    # --- API server bind: Railway injects $PORT, MPT reads listen_port ---
+    app["listen_host"] = "0.0.0.0"
+    if os.getenv("PORT"):
+        app["listen_port"] = int(os.environ["PORT"])
+
     # --- Subtitles: faster-whisper on CPU ---
     app["subtitle_provider"] = os.getenv("SUBTITLE_PROVIDER", "whisper")
     whisper = cfg.setdefault("whisper", {})

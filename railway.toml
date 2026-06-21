@@ -2,16 +2,19 @@
 builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
-[build.args]
-# Railway runs outside China — use official Debian/PyPI mirrors so the
-# image builds fast and reliably (MPT defaults to China mirrors).
-DOCKER_BUILD_MIRROR = "default"
-PIP_USE_OFFICIAL = "1"
-
 [deploy]
-# Generate config.toml from Railway env vars, then launch the WebUI.
-startCommand = "python railway_entrypoint.py && streamlit run ./webui/Main.py --server.port=$PORT --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --browser.gatherUsageStats=false"
-healthcheckPath = "/"
-healthcheckTimeout = 120
+# Generate config.toml from env vars, then run the REST API server
+# (uvicorn -> app.asgi:app). The orchestrator drives MPT via /api/v1/*.
+startCommand = "python railway_entrypoint.py && python main.py"
+# FastAPI's /docs always returns 200 once the server is up. MPT does NOT
+# mount /ping, and / is static files with no guaranteed index.
+healthcheckPath = "/docs"
+healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 3
+
+# To speed up builds, set these as Railway service VARIABLES (not here —
+# Railway ignores [build.args] in railway.toml and exposes service vars as
+# Docker ARGs instead):
+#   DOCKER_BUILD_MIRROR=default
+#   PIP_USE_OFFICIAL=1
