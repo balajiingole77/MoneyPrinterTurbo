@@ -44,10 +44,12 @@ def main() -> None:
     app["deepseek_base_url"] = os.getenv("DEEPSEEK_BASE_URL", "https://api.deepseek.com")
     app["deepseek_model_name"] = os.getenv("DEEPSEEK_MODEL_NAME", "deepseek-chat")
 
-    # --- API server bind: Railway injects $PORT, MPT reads listen_port ---
-    app["listen_host"] = "0.0.0.0"
-    if os.getenv("PORT"):
-        app["listen_port"] = int(os.environ["PORT"])
+    # --- API server bind ---
+    # config.py reads listen_host/listen_port from the ROOT of the config
+    # (_cfg.get("listen_port")), NOT from [app]. Set them at top level so
+    # uvicorn binds the port Railway routes to (default 8080).
+    cfg["listen_host"] = "0.0.0.0"
+    cfg["listen_port"] = int(os.getenv("PORT", "8080"))
 
     # --- Subtitles: faster-whisper on CPU ---
     app["subtitle_provider"] = os.getenv("SUBTITLE_PROVIDER", "whisper")
